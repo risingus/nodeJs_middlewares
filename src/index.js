@@ -10,19 +10,59 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const isUserCreated = users.find((user) => user.username === username)
+
+  if (!isUserCreated) return response.status(404).json({error: 'User not found!'})
+
+  request.user = isUserCreated;
+
+  return next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const {user} = request;
+
+  if (user.todos.length >= 10 && user.pro === false) return response.status(403).json({error: 'Max todos created!'})
+
+  // request.user = user;
+
+  return next()
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const {id} = request.params;
+
+  const isUserCreated = users.find((user) => user.username === username)
+
+  if (!isUserCreated) return response.status(404).json({error: 'User not found!'})
+
+  const isUuidValid = validate(id);
+
+  if (!isUuidValid) return response.status(400).json({error: 'Invalid ID'})
+
+  const isTodoInThisUser = isUserCreated.todos.find((todo) => todo.id === id)
+
+  if (!isTodoInThisUser) return response.status(404).json({error: 'To-do not found'})
+
+  request.todo = isTodoInThisUser
+  request.user = isUserCreated
+
+  return next()
+
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const {id} = request.params
+
+  const isUserCreated = users.find((user) => user.id === id)
+
+  if (!isUserCreated) return response.status(404).json({error: 'User not found!'})
+  
+  
+  request.user = isUserCreated
+  return next()
 }
 
 app.post('/users', (request, response) => {
